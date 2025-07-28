@@ -29,4 +29,29 @@ export class AiService {
       return null;
     }
   }
+
+  async getStats(): Promise<{
+    total: number;
+    free: number;
+    paid: number;
+    freemium: number;
+  } | null> {
+    try {
+      const [paid, free, freemium] = await Promise.all([
+        AI.count({ where: { subscriptionType: "Paid" } }),
+        AI.count({ where: { subscriptionType: "Free" } }),
+        AI.count({ where: { subscriptionType: "Freemium" } }),
+      ]);
+
+      return {
+        total: paid + free + freemium,
+        free,
+        paid,
+        freemium,
+      };
+    } catch (err) {
+      console.log(err.message);
+      return null;
+    }
+  }
 }

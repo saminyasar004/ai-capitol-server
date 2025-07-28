@@ -26,6 +26,40 @@ import { extname } from "path";
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
+  @Get("stats")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Get AI listing stats." })
+  @ApiResponse({
+    status: 200,
+    description: "Successfully fetched AI listing stats.",
+  })
+  @ApiResponse({ status: 500, description: "Internal server side error." })
+  async getStats(): Promise<ResponseProps> {
+    try {
+      const stats = await this.aiService.getStats();
+      if (!stats) {
+        return {
+          status: 500,
+          message: "Error fetching stats. Please try again later.",
+        };
+      }
+
+      return {
+        status: 200,
+        message: "Stats fetched successfully.",
+        data: {
+          stats,
+        },
+      };
+    } catch (err) {
+      console.log(err.message);
+      return {
+        status: 500,
+        message: err.message,
+      };
+    }
+  }
+
   @Post("create")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Create new AI listing." })
