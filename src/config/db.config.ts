@@ -3,7 +3,7 @@ import path from "path";
 import { dbConnectionString } from "./dotenv.config";
 
 export const sequelize = new Sequelize(dbConnectionString, {
-  dialect: "mysql",
+  dialect: "postgres",
   logging: false,
   pool: {
     max: 10,
