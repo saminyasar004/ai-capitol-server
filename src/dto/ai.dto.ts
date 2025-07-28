@@ -24,7 +24,7 @@ export class CreateAIDto {
   isVerified: boolean;
 
   @ApiProperty({ description: "The AI subscriptionType", example: "Paid" })
-  subscriptionType: "Paid" | "Free" | "Freemium";
+  subscriptionType: "paid" | "free" | "freemium";
 
   @ApiProperty({ description: "The AI categoryId", example: 1 })
   categoryId: number;

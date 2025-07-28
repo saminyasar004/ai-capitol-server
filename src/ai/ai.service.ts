@@ -68,9 +68,9 @@ export class AiService {
   } | null> {
     try {
       const [paid, free, freemium] = await Promise.all([
-        AI.count({ where: { subscriptionType: "Paid" } }),
-        AI.count({ where: { subscriptionType: "Free" } }),
-        AI.count({ where: { subscriptionType: "Freemium" } }),
+        AI.count({ where: { subscriptionType: "paid" } }),
+        AI.count({ where: { subscriptionType: "free" } }),
+        AI.count({ where: { subscriptionType: "freemium" } }),
       ]);
 
       return {

@@ -21,7 +21,7 @@ export interface AICreationAttributes {
   isFeatured: boolean;
   isTop: boolean;
   isVerified: boolean;
-  subscriptionType: "Paid" | "Free" | "Freemium";
+  subscriptionType: "paid" | "free" | "freemium";
   categoryId: number;
 }
 
@@ -98,10 +98,10 @@ export default class AI extends Model<AIAttributes, AICreationAttributes> {
   @ApiProperty({ description: "AI subscriptionType", example: "Paid" })
   @Column({
     type: DataType.ENUM,
-    values: ["Paid", "Free", "Freemium"],
+    values: ["paid", "free", "freemium"],
     allowNull: false,
   })
-  declare subscriptionType: "Paid" | "Free" | "Freemium";
+  declare subscriptionType: "paid" | "free" | "freemium";
 
   @ApiProperty({ description: "AI categoryId", example: 1 })
   @ForeignKey(() => Category)

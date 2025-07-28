@@ -84,8 +84,8 @@ export class AiController {
         isVerified: { type: "boolean", example: false },
         subscriptionType: {
           type: "string",
-          enum: ["Paid", "Free", "Freemium"],
-          example: "Freemium",
+          enum: ["paid", "free", "freemium"],
+          example: "freemium",
         },
         categoryId: { type: "integer", example: 1 },
         logo: { type: "string", format: "binary" },
@@ -142,6 +142,7 @@ export class AiController {
 
       const logoPath = `uploads/logos/${file.filename}`;
       const ai = await this.aiService.createAI(payload, logoPath);
+      console.log(ai);
       if (!ai) {
         return {
           status: 500,

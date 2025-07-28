@@ -24,7 +24,7 @@ export interface AIAttributes {
   isFeatured: boolean;
   isTop: boolean;
   isVerified: boolean;
-  subscriptionType: "Paid" | "Free" | "Freemium";
+  subscriptionType: "paid" | "free" | "freemium";
   categoryId: number;
   createdAt: Date;
   updatedAt: Date;
