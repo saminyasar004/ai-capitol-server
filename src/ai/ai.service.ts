@@ -14,6 +14,36 @@ export class AiService {
     }
   }
 
+  async updateAI(aiId: number, aiData: CreateAIDto): Promise<boolean> {
+    try {
+      const isUpdated = await AI.update(aiData, { where: { aiId } });
+
+      if (!isUpdated) {
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.log(err.message);
+      return false;
+    }
+  }
+
+  async deleteAI(aiId: number): Promise<boolean> {
+    try {
+      const isDeleted = await AI.destroy({ where: { aiId } });
+
+      if (!isDeleted) {
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.log(err.message);
+      return false;
+    }
+  }
+
   async getAIs(): Promise<AI[] | null> {
     try {
       return AI.findAll({

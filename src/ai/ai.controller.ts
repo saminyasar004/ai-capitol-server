@@ -4,10 +4,13 @@ import { JoiValidationPipe } from "@/pipes/joi-validation.pipe";
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Put,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
@@ -183,6 +186,72 @@ export class AiController {
         data: {
           ais,
         },
+      };
+    } catch (err) {
+      console.log(err.message);
+      return {
+        status: 500,
+        message: err.message,
+      };
+    }
+  }
+
+  @Put("update/:id")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Update AI listing." })
+  @ApiResponse({
+    status: 200,
+    description: "Successfully updated AI listing.",
+  })
+  @ApiResponse({ status: 500, description: "Internal server side error." })
+  async updateAI(
+    @Param("id") id: number,
+    @Body(new JoiValidationPipe(createAISchema))
+    payload: CreateAIDto,
+  ): Promise<ResponseProps> {
+    try {
+      const ai = await this.aiService.updateAI(id, payload);
+      if (!ai) {
+        return {
+          status: 500,
+          message: "Error updating AI. Please try again later.",
+        };
+      }
+
+      return {
+        status: 200,
+        message: "AI updated successfully.",
+      };
+    } catch (err) {
+      console.log(err.message);
+      return {
+        status: 500,
+        message: err.message,
+      };
+    }
+  }
+
+  @Delete("delete/:id")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Delete AI listing." })
+  @ApiResponse({
+    status: 200,
+    description: "Successfully deleted AI listing.",
+  })
+  @ApiResponse({ status: 500, description: "Internal server side error." })
+  async deleteAI(@Param("id") id: number): Promise<ResponseProps> {
+    try {
+      const isDeleted = await this.aiService.deleteAI(id);
+      if (!isDeleted) {
+        return {
+          status: 500,
+          message: "Error deleting AI. Please try again later.",
+        };
+      }
+
+      return {
+        status: 200,
+        message: "AI deleted successfully.",
       };
     } catch (err) {
       console.log(err.message);
