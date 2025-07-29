@@ -24,6 +24,7 @@ import { AiService } from "./ai.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { extname } from "path";
+import { unlink } from "fs";
 
 @Controller("ai")
 export class AiController {
@@ -200,19 +201,119 @@ export class AiController {
   @Put("update/:id")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Update AI listing." })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    type: CreateAIDto,
+    schema: {
+      type: "object",
+      properties: {
+        title: { type: "string", example: "My AI Tool" },
+        description: {
+          type: "string",
+          example: "A powerful AI tool for automation",
+        },
+        url: { type: "string", example: "https://example.com" },
+        upvote: { type: "integer", example: 100 },
+        isFeatured: { type: "boolean", example: false },
+        isTop: { type: "boolean", example: false },
+        isVerified: { type: "boolean", example: false },
+        subscriptionType: {
+          type: "string",
+          enum: ["paid", "free", "freemium"],
+          example: "freemium",
+        },
+        categoryId: { type: "integer", example: 1 },
+        logo: { type: "string", format: "binary" },
+      },
+    },
+  })
   @ApiResponse({
     status: 200,
     description: "Successfully updated AI listing.",
   })
+  @UseInterceptors(
+    FileInterceptor("logo", {
+      storage: diskStorage({
+        destination: "./uploads/logos",
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `${uniqueSuffix}${ext}`);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/svg+xml",
+          "image/webp",
+        ];
+        if (!allowedTypes.includes(file.mimetype)) {
+          return callback(
+            new Error("Only JPEG, PNG, and GIF files are allowed"),
+            false,
+          );
+        }
+        callback(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    }),
+  )
+  @ApiResponse({ status: 404, description: "AI not found." })
   @ApiResponse({ status: 500, description: "Internal server side error." })
   async updateAI(
     @Param("id") id: number,
     @Body(new JoiValidationPipe(createAISchema))
     payload: CreateAIDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseProps> {
     try {
-      const ai = await this.aiService.updateAI(id, payload);
+      const ai = await this.aiService.getAIById(id);
       if (!ai) {
+        return {
+          status: 404,
+          message: "Ai id could not be found.",
+        };
+      }
+
+      if (file) {
+        console.log("file ", file);
+        // if previous logo and new logo are different
+        if (file.filename !== ai.logo) {
+          // delete previous logo
+          await unlink(`${ai.logo}`, (err) => {
+            if (err) {
+              console.log(err.message);
+              return {
+                status: 500,
+                message:
+                  "Error deleting previous AI logo. Please try again later.",
+              };
+            }
+          });
+
+          const isLogoUpdated = await this.aiService.updateAILogo(
+            id,
+            `uploads/logos/${file.filename}`,
+          );
+          if (!isLogoUpdated) {
+            return {
+              status: 500,
+              message: "Error updating AI logo. Please try again later.",
+            };
+          }
+        }
+      }
+
+      const isUpdated = await this.aiService.updateAI(id, payload);
+
+      console.log("payload ", payload);
+
+      console.log(isUpdated);
+
+      if (!isUpdated) {
         return {
           status: 500,
           message: "Error updating AI. Please try again later.",
@@ -239,9 +340,29 @@ export class AiController {
     status: 200,
     description: "Successfully deleted AI listing.",
   })
+  @ApiResponse({ status: 404, description: "AI not found." })
   @ApiResponse({ status: 500, description: "Internal server side error." })
   async deleteAI(@Param("id") id: number): Promise<ResponseProps> {
     try {
+      const ai = await this.aiService.getAIById(id);
+      if (!ai) {
+        return {
+          status: 404,
+          message: "Ai id could not be found.",
+        };
+      }
+
+      // delete the logo
+      await unlink(`${ai.logo}`, (err) => {
+        if (err) {
+          console.log(err.message);
+          return {
+            status: 500,
+            message: "Error deleting previous AI logo. Please try again later.",
+          };
+        }
+      });
+
       const isDeleted = await this.aiService.deleteAI(id);
       if (!isDeleted) {
         return {

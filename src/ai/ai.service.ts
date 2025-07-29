@@ -5,6 +5,15 @@ import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class AiService {
+  async getAIById(aiId: number): Promise<AI | null> {
+    try {
+      return AI.findByPk(aiId);
+    } catch (err) {
+      console.log(err.message);
+      return null;
+    }
+  }
+
   async createAI(aiData: CreateAIDto, logoPath: string): Promise<AI | null> {
     try {
       return await AI.create({ ...aiData, logo: logoPath });
@@ -17,6 +26,21 @@ export class AiService {
   async updateAI(aiId: number, aiData: CreateAIDto): Promise<boolean> {
     try {
       const isUpdated = await AI.update(aiData, { where: { aiId } });
+
+      if (!isUpdated) {
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.log(err.message);
+      return false;
+    }
+  }
+
+  async updateAILogo(aiId: number, logo: string): Promise<boolean> {
+    try {
+      const isUpdated = await AI.update({ logo }, { where: { aiId } });
 
       if (!isUpdated) {
         return false;
