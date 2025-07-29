@@ -309,10 +309,6 @@ export class AiController {
 
       const isUpdated = await this.aiService.updateAI(id, payload);
 
-      console.log("payload ", payload);
-
-      console.log(isUpdated);
-
       if (!isUpdated) {
         return {
           status: 500,
